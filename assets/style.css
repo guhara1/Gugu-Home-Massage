@@ -987,7 +987,9 @@ body::before {
     radial-gradient(ellipse 50% 40% at 0% 100%, var(--overlay-gold), transparent 60%);
   opacity: 0.7;
 }
-.site-header, .site-main, .site-footer, .hero { position: relative; z-index: 1; }
+.site-main, .site-footer, .hero { position: relative; z-index: 1; }
+/* 헤더는 원래 sticky z-index:100 유지 — 드롭다운이 본문 위로 올라오도록 */
+.site-header { position: sticky; z-index: 100; }
 
 /* 브랜드 마크 — 프리미엄 골드·앰버 그라데이션 */
 .brand-mark {
