@@ -140,7 +140,7 @@ STATIONS = [
         "slug": "sillim-station",
         "name": "신림역",
         "priority": 1,
-        "lines": ["2호선"],
+        "lines": ["2호선", "신림선"],
         "nearby_dongs": ["신림동", "신원동"],
         "nearby_gu": ["관악구"],
         "life_area": "신림·관악",

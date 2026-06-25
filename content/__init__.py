@@ -104,6 +104,8 @@ for g in D.GU:
 def _station_index():
     cards = ""
     for s in D.STATIONS:
+        if s.get("priority", 1) != 1:
+            continue  # 핵심(1차) 역만 카드로, 2차 확장 역은 아래 노선도에서 안내
         lines = ", ".join(s.get("lines", []))
         cards += (
             f'<a class="card" href="/seoul/station/{s["slug"]}/"><h3>{s["name"]}</h3>'
@@ -111,13 +113,13 @@ def _station_index():
             f'<span class="card-arrow">자세히 보기 →</span></a>'
         )
 
-    # 서울 지하철 1~9호선 + 그 외 전 노선별 역 안내(노선도)
+    # 서울 지하철 1~9호선 + 그 외 전 노선별 역 안내(접기/펼치기 노선도)
     by_line = {}
     for s in D.STATIONS:
         for ln in s.get("lines", []):
             by_line.setdefault(ln, []).append(s)
     line_rows = ""
-    for ln in G.LINE_ORDER:
+    for i, ln in enumerate(G.LINE_ORDER):
         sts = by_line.get(ln, [])
         if sts:
             links = " · ".join(
@@ -125,15 +127,20 @@ def _station_index():
             )
         else:
             links = '<span class="line-empty">해당 노선 역세권은 순차 추가 예정</span>'
+        # 1~3호선은 기본 펼침, 나머지는 접힘
+        opened = " open" if i < 3 else ""
         line_rows += (
-            f'<div class="line-row">{G.line_chip(ln)}'
-            f'<span class="line-stations">{links}</span></div>'
+            f'<details class="line-acc"{opened}><summary>'
+            f'{G.line_chip(ln)}<span class="line-count">역 {len(sts)}곳</span>'
+            f'<span class="line-toggle" aria-hidden="true"></span></summary>'
+            f'<div class="line-stations">{links}</div></details>'
         )
     line_map = (
         '<section><h2>서울 지하철 노선별 역 안내 (1~9호선)</h2>'
         '<p>서울 지하철 1호선부터 9호선까지, 그리고 신분당선·경의중앙선·공항철도 등 '
-        '주요 노선별로 방문 안내 역을 정리했습니다. 환승역은 노선마다 중복 표시되며, '
-        '실제 방문은 역이 아니라 건물 주소를 기준으로 진행됩니다.</p>'
+        '주요 노선을 노선별로 펼쳐 볼 수 있습니다. 노선 제목을 누르면 해당 노선의 역 '
+        '목록이 열립니다. 환승역은 노선마다 중복 표시되며, 실제 방문은 역이 아니라 '
+        '건물 주소를 기준으로 진행됩니다.</p>'
         f'<div class="line-map">{line_rows}</div></section>'
     )
 

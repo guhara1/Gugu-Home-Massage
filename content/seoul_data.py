@@ -11,7 +11,10 @@ from content._data_d import GU as _GU_D
 from content._data_e import GU as _GU_E
 from content._data_f import GU as _GU_F
 from content._data_g import GU as _GU_G
-from content._data_stations import STATIONS
+from content._data_stations import STATIONS as _STATIONS1
+from content._data_stations2 import STATIONS2 as _STATIONS2
+
+STATIONS = _STATIONS1 + _STATIONS2
 
 # 행정구 안내 노출 순서(생활권 비중이 큰 구 우선).
 _GU_ORDER = [
