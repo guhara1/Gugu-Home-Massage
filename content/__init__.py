@@ -110,6 +110,33 @@ def _station_index():
             f'<p>{lines}</p>'
             f'<span class="card-arrow">자세히 보기 →</span></a>'
         )
+
+    # 서울 지하철 1~9호선 + 그 외 전 노선별 역 안내(노선도)
+    by_line = {}
+    for s in D.STATIONS:
+        for ln in s.get("lines", []):
+            by_line.setdefault(ln, []).append(s)
+    line_rows = ""
+    for ln in G.LINE_ORDER:
+        sts = by_line.get(ln, [])
+        if sts:
+            links = " · ".join(
+                f'<a href="/seoul/station/{s["slug"]}/">{s["name"]}</a>' for s in sts
+            )
+        else:
+            links = '<span class="line-empty">해당 노선 역세권은 순차 추가 예정</span>'
+        line_rows += (
+            f'<div class="line-row">{G.line_chip(ln)}'
+            f'<span class="line-stations">{links}</span></div>'
+        )
+    line_map = (
+        '<section><h2>서울 지하철 노선별 역 안내 (1~9호선)</h2>'
+        '<p>서울 지하철 1호선부터 9호선까지, 그리고 신분당선·경의중앙선·공항철도 등 '
+        '주요 노선별로 방문 안내 역을 정리했습니다. 환승역은 노선마다 중복 표시되며, '
+        '실제 방문은 역이 아니라 건물 주소를 기준으로 진행됩니다.</p>'
+        f'<div class="line-map">{line_rows}</div></section>'
+    )
+
     body = (
         "<section><p>서울 주요 지하철역별 방문 가능 지역을 안내합니다. 역명 기준으로 "
         "한 페이지씩 정리했으며, 환승역도 노선·출구별로 나누지 않고 한곳에서 인접 "
@@ -118,7 +145,8 @@ def _station_index():
         "<section><h2>역세권 안내를 보는 방법</h2>"
         "<p>가까운 지하철역을 알고 있다면 역 페이지에서 인접 행정동과 생활권을 바로 "
         "확인할 수 있습니다. 실제 방문은 역이 아니라 건물 주소를 기준으로 진행되므로, "
-        "예약 시 자택·오피스텔·호텔의 정확한 주소를 함께 알려주시면 됩니다.</p>"
+        "예약 시 자택·오피스텔·호텔의 정확한 주소를 함께 알려주시면 됩니다.</p></section>"
+        + line_map
         + G.pricing_block()
         + G.check_block("지하철역 인근")
         + G.faq_block([

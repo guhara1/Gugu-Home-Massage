@@ -67,6 +67,30 @@ def kw(slug: str) -> str:
     return pick(slug, ["출장마사지", "홈타이", "방문 마사지"])
 
 
+# ── 서울 지하철 노선 색상(공식 라인컬러) ──────────────────
+LINE_COLORS = {
+    "1호선": "#0052A4", "2호선": "#00A84D", "3호선": "#EF7C1C",
+    "4호선": "#00A5DE", "5호선": "#996CAC", "6호선": "#CD7C2F",
+    "7호선": "#747F00", "8호선": "#E6186C", "9호선": "#BDB092",
+    "신분당선": "#D4003B", "수인분당선": "#FABE00", "경의중앙선": "#77C4A3",
+    "공항철도": "#0090D2", "경춘선": "#0C8E72", "우이신설선": "#B7C452",
+    "신림선": "#6789CA",
+}
+LINE_ORDER = ["1호선", "2호선", "3호선", "4호선", "5호선", "6호선", "7호선",
+              "8호선", "9호선", "신분당선", "수인분당선", "경의중앙선",
+              "공항철도", "경춘선", "우이신설선", "신림선"]
+
+
+def line_chip(line: str) -> str:
+    c = LINE_COLORS.get(line, "#5a6275")
+    return f'<span class="line-chip" style="background:{c}">{line}</span>'
+
+
+def line_chips(lines) -> str:
+    return ('<span class="line-chips">'
+            + "".join(line_chip(l) for l in lines) + "</span>")
+
+
 def visit_type(character: str, slug: str) -> str:
     """지역 특성에서 주된 방문 형태(자택·오피스텔·호텔·숙소)를 추정해 한 문장으로."""
     c = character or ""
@@ -486,10 +510,13 @@ def station_body(s) -> str:
 
     parts.append(
         f"<section><h2>{name} 환승 노선</h2>"
+        f"{line_chips(s.get('lines', []))}"
         f"<p>{name}은 {lines} 노선을 이용할 수 있습니다. 노선이 많을수록 다양한 "
         f"생활권에서 접근이 쉬워, 방문 동선의 기준점으로 적합합니다. 다만 출장마사지·"
         f"홈타이 방문은 노선이 아니라 실제 머무는 건물 위치를 기준으로 진행되므로, "
-        f"역은 위치를 가늠하는 참고점으로 활용하시면 됩니다.</p></section>"
+        f"역은 위치를 가늠하는 참고점으로 활용하시면 됩니다.</p>"
+        f'<p>전체 노선별 역은 <a href="/seoul/station/">지하철역 안내</a>의 '
+        f"서울 지하철 1~9호선 노선도에서 확인할 수 있습니다.</p></section>"
     )
 
     near_dong = s.get("nearby_dongs", [])
