@@ -52,17 +52,33 @@ def distribution():
     return [(star, counts[star], round(counts[star] / n * 100)) for star in (5, 4, 3, 2, 1)]
 
 
-def dist_html(compact=False):
-    """별점 분포 막대 UI."""
+def dist_html(compact=False, interactive=False):
+    """별점 분포 막대 UI. interactive=True면 클릭으로 후기 필터링(버튼)."""
     rows = ""
     for star, cnt, pct in distribution():
-        rows += (
-            f'<div class="dist-row">'
+        inner = (
             f'<span class="dist-star">{star}<span class="dist-s">★</span></span>'
-            f'<span class="dist-bar"><span class="dist-fill" style="width:{pct}%"></span></span>'
-            f'<span class="dist-pct">{cnt}</span></div>'
+            f'<span class="dist-bar"><span class="dist-fill dist-{star}" '
+            f'style="width:{pct}%"></span></span>'
+            f'<span class="dist-pct">{cnt}</span>'
         )
-    cls = "rating-dist compact" if compact else "rating-dist"
+        if interactive:
+            dis = "" if cnt else " disabled"
+            rows += (
+                f'<button type="button" class="dist-row dist-btn" data-star="{star}"{dis} '
+                f'aria-label="{star}점 후기 {cnt}개만 보기">{inner}</button>'
+            )
+        else:
+            rows += f'<div class="dist-row">{inner}</div>'
+    cls = "rating-dist"
+    if compact:
+        cls += " compact"
+    if interactive:
+        cls += " interactive"
+        reset = ('<button type="button" class="dist-reset is-active" '
+                 'data-star="">전체 보기</button>')
+        return (f'<div class="{cls}" aria-label="별점 분포 · 클릭하면 해당 별점 후기만 표시">'
+                f'{rows}{reset}</div>')
     return f'<div class="{cls}" aria-label="별점 분포">{rows}</div>'
 
 

@@ -388,7 +388,7 @@ def _reviews():
     cards = ""
     for rv in RV.REVIEWS:
         cards += (
-            f'<article class="review-card">'
+            f'<article class="review-card" data-rating="{rv["rating"]}">'
             f'<div class="review-stars" aria-label="별점 {rv["rating"]}점">{_stars(rv["rating"])}</div>'
             f'<p class="review-body">“{rv["body"]}”</p>'
             f'<p class="review-meta"><span class="review-author">{rv["author"]}</span>'
@@ -403,9 +403,12 @@ def _reviews():
         f'<div class="reviews-score reviews-score-lg"><span class="reviews-avg">{agg["value"]}</span>'
         f'<span class="reviews-stars">{_stars(agg["value"])}</span>'
         f'<span class="reviews-count">5점 만점 · 누적 후기 {agg["count"]}개</span></div>'
-        f'{RV.dist_html()}'
+        f'{RV.dist_html(interactive=True)}'
         '</div></section>'
-        f'<section><h2>고객 후기 전체</h2><div class="reviews-grid reviews-grid-full">{cards}</div></section>'
+        '<section><h2>고객 후기 전체</h2>'
+        '<p class="reviews-filter-hint">별점 막대를 누르면 해당 점수의 후기만 볼 수 있습니다.</p>'
+        f'<div class="reviews-grid reviews-grid-full">{cards}</div>'
+        '<p class="reviews-empty" hidden>해당 별점의 후기가 아직 없습니다.</p></section>'
         "<section><h2>후기는 어떻게 반영되나요</h2>"
         "<p>구구 마사지는 건전한 방문 관리 서비스만 운영하며, 후기는 위생·안전 기준과 "
         "시간 약속, 응대 친절도에 대한 평가가 중심입니다. 평점은 실제 이용 고객이 남긴 "

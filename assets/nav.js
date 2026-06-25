@@ -28,4 +28,38 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // 후기 별점 분포 클릭 → 해당 별점만 필터링 (이용 후기 페이지)
+  const dist = document.querySelector('.rating-dist.interactive');
+  const grid = document.querySelector('.reviews-grid-full');
+  if (dist && grid) {
+    const cards = Array.prototype.slice.call(grid.querySelectorAll('.review-card'));
+    const empty = document.querySelector('.reviews-empty');
+    const btns = Array.prototype.slice.call(dist.querySelectorAll('[data-star]'));
+    let current = '';
+
+    const apply = (star) => {
+      current = star;
+      let shown = 0;
+      cards.forEach((c) => {
+        const match = !star || c.getAttribute('data-rating') === star;
+        c.style.display = match ? '' : 'none';
+        if (match) shown++;
+      });
+      btns.forEach((b) => {
+        const s = b.getAttribute('data-star');
+        b.classList.toggle('is-active', s === star);
+      });
+      if (empty) empty.hidden = shown !== 0;
+    };
+
+    btns.forEach((b) => {
+      if (b.disabled) return;
+      b.addEventListener('click', () => {
+        const s = b.getAttribute('data-star');
+        apply(current === s ? '' : s); // 같은 별점 다시 누르면 전체로
+      });
+    });
+    apply('');
+  }
 });

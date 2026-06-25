@@ -1460,3 +1460,37 @@ h1 { border-bottom: 2px solid transparent; border-image: var(--grad-amber) 1; le
   .reviews-summary { gap: 18px; }
   .rating-dist, .rating-dist.compact { min-width: 100%; }
 }
+
+/* 별점별 막대 색상 (5★ 골드 → 1★ 딤) */
+.dist-fill.dist-5 { background: linear-gradient(90deg, #E9C46A, #C9A35C); }
+.dist-fill.dist-4 { background: var(--grad-amber); }
+.dist-fill.dist-3 { background: linear-gradient(90deg, #F0934A, #E8702F); }
+.dist-fill.dist-2 { background: linear-gradient(90deg, #8b93a8, #6f7790); }
+.dist-fill.dist-1 { background: linear-gradient(90deg, #6b748c, #565e74); }
+
+/* 분포 막대 클릭 필터(버튼) */
+.dist-btn {
+  appearance: none; -webkit-appearance: none;
+  background: none; border: none; margin: 0; padding: 4px 8px;
+  width: 100%; font: inherit; text-align: left; cursor: pointer;
+  border-radius: 9px; transition: var(--transition);
+}
+.dist-btn:not(:disabled):hover { background: var(--glass); }
+.dist-btn.is-active { background: var(--overlay-amber); }
+.dist-btn.is-active .dist-star, .dist-btn.is-active .dist-pct { color: var(--orange-light); }
+.dist-btn:disabled { cursor: default; opacity: 0.45; }
+.rating-dist.interactive { min-width: 240px; }
+.dist-reset {
+  appearance: none; -webkit-appearance: none; align-self: flex-start;
+  margin-top: 8px; font: inherit; font-size: 0.82rem; font-weight: 700;
+  color: var(--text-dim); background: var(--glass);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 5px 14px; cursor: pointer; transition: var(--transition);
+}
+.dist-reset.is-active {
+  color: var(--orange-light); border-color: rgba(255, 122, 47, 0.5);
+  background: var(--overlay-amber);
+}
+.dist-reset:hover { color: var(--orange-light); }
+.reviews-filter-hint { font-size: 0.86rem; color: var(--text-mute); margin: -6px 0 14px; }
+.reviews-empty { color: var(--text-dim); padding: 18px 2px; }
