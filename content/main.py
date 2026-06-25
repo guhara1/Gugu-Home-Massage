@@ -130,6 +130,7 @@ def _body():
         f'<a href="/seoul/life/">생활권 안내</a>에서 확인할 수 있습니다.</p>'
         f'<div class="card-grid">{_life_cards()}</div></section>'
     )
+    parts.append(G.pricing_block())
     parts.append(G.check_block("서울 전지역 자택·오피스텔·호텔·숙소"))
     parts.append(G.faq_block(FAQ))
     return "\n".join(parts)

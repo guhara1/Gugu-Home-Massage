@@ -9,6 +9,7 @@ seoul_data.py의 구조화 데이터(구·행정동·역·생활권)를 읽어
 import re
 
 from content import seoul_data as D
+from content.site import PHONE
 
 
 # ── 이름 → URL 매핑 (내부 링크용) ──────────────────────────
@@ -124,6 +125,45 @@ def check_block(place_phrase: str) -> str:
     )
 
 
+def pricing_block() -> str:
+    """코스 시간별 기본 요금표. class="pricing"이라 본문 글자수 측정에서 제외된다
+    (전 페이지 공통 블록이므로 고유 본문으로 계산하지 않는다)."""
+    tel = f"tel:{PHONE}"
+    return (
+        '<section class="pricing">'
+        '<h2>코스 시간으로 보는 기본 요금</h2>'
+        '<p class="pricing-sub">관리 시간(60·90·120분)을 기준으로 정리한 기본 '
+        '금액입니다. 표시되지 않은 별도 비용은 두지 않는 것을 원칙으로 안내합니다.</p>'
+        '<div class="pricing-grid">'
+        '<div class="price-card">'
+        '<p class="price-name">60분 코스</p>'
+        '<p class="price-amount">90,000<span class="won">원</span></p>'
+        '<p class="price-min">60분</p>'
+        '<p class="price-desc">핵심 부위 위주 가벼운 이완</p>'
+        f'<a class="price-btn" href="{tel}">예약 문의</a>'
+        '</div>'
+        '<div class="price-card is-featured">'
+        '<span class="price-badge">추천</span>'
+        '<p class="price-name">90분 코스</p>'
+        '<p class="price-amount">150,000<span class="won">원</span></p>'
+        '<p class="price-min">90분</p>'
+        '<p class="price-desc">전신 균형 표준 구성·아로마 포함</p>'
+        f'<a class="price-btn price-btn-primary" href="{tel}">예약 문의</a>'
+        '</div>'
+        '<div class="price-card">'
+        '<p class="price-name">120분 코스</p>'
+        '<p class="price-amount">180,000<span class="won">원</span></p>'
+        '<p class="price-min">120분</p>'
+        '<p class="price-desc">구석구석 집중하는 프리미엄 구성</p>'
+        f'<a class="price-btn" href="{tel}">예약 문의</a>'
+        '</div>'
+        '</div>'
+        '<p class="pricing-note">방문 지역과 시간대, 이동 거리에 따라 최종 금액은 '
+        '통화 시 확정됩니다. <a href="/reservation/">요금·예약 기준 자세히 보기 →</a></p>'
+        '</section>'
+    )
+
+
 def faq_block(pairs) -> str:
     rows = "".join(f"<dt>{q}</dt><dd>{a}</dd>" for q, a in pairs)
     return (
@@ -230,6 +270,7 @@ def gu_body(g) -> str:
         f"<ul>{life_links}</ul></section>"
     )
 
+    parts.append(pricing_block())
     parts.append(check_block(f"{name}"))
 
     faq = [
@@ -320,6 +361,7 @@ def dong_body(g, dn) -> str:
         f"많습니다.</p><p>{dlinks}</p></section>"
     )
 
+    parts.append(pricing_block())
     parts.append(check_block(f"{name} 자택·오피스텔·숙소"))
 
     faq = [
@@ -413,6 +455,7 @@ def station_body(s) -> str:
         f"인접 자치구의 같은 생활권 지역까지 방문 상담이 가능합니다.</p></section>"
     )
 
+    parts.append(pricing_block())
     parts.append(check_block(f"{name} 인근"))
 
     faq = [
@@ -510,6 +553,7 @@ def life_body(l) -> str:
         f"참고하세요.</p></section>"
     )
 
+    parts.append(pricing_block())
     parts.append(check_block(f"{name} 권역"))
 
     faq = [

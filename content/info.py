@@ -29,6 +29,7 @@ def _reservation():
         "고객이 머무는 공간으로 직접 찾아가는 방식이므로, 정확한 주소와 시간, 방문 "
         "형태를 미리 확인하는 것이 가장 중요합니다. 아래 절차와 확인 항목을 참고하시면 "
         "예약이 한결 수월합니다.</p></section>"
+        + G.pricing_block() +
         "<section><h2>예약 절차</h2><ol>"
         f'<li><strong>전화 상담</strong> — <a href="tel:{PHONE}">{PHONE_DISPLAY}</a>로 '
         "연락해 방문 지역과 희망 시간을 알려주세요.</li>"
