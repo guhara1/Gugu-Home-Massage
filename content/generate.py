@@ -193,17 +193,85 @@ def closing_block(name: str, slug: str) -> str:
 
 
 def related_block(items) -> str:
-    """[(label, url), ...] 관련 페이지 카드."""
+    """롱테일 주제 카드 목록. items: [{label, sub, url}, ...] (None 무시)."""
     cards = ""
-    for label, url in items:
+    for it in items:
+        if not it:
+            continue
+        sub = f'<p>{it["sub"]}</p>' if it.get("sub") else ""
         cards += (
-            f'<a class="card" href="{url}"><h3>{label}</h3>'
+            f'<a class="card" href="{it["url"]}"><h3>{it["label"]}</h3>{sub}'
             f'<span class="card-arrow">자세히 보기 →</span></a>'
         )
     return (
         f'<section><h2>관련 지역·생활권 안내</h2>'
         f'<div class="card-grid">{cards}</div></section>'
     )
+
+
+# ── 롱테일 관련 링크 헬퍼(지역 교차 내부링크 강화) ──────────
+_RL_DONG = ["{n} 출장마사지·홈타이 안내", "{n} 방문 가능 지역 안내",
+            "{n} 홈타이 예약 안내", "{n} 출장마사지 동네 안내"]
+_RL_STATION = ["{n} 인근 출장마사지·홈타이", "{n} 역세권 방문 지역 안내",
+               "{n} 주변 홈타이 예약 안내"]
+_RL_LIFE = ["{n} 생활권 출장마사지·홈타이", "{n} 생활권 방문 예약 안내",
+            "{n} 권역 홈타이 안내"]
+_RL_GU = ["{n} 출장마사지·홈타이 안내", "{n} 지역별 방문 안내",
+          "{n} 생활권 홈타이 안내"]
+
+
+def rel_dong(name: str):
+    if name not in DONG_URL:
+        return None
+    g, dn = DONG_OBJ[name]
+    la = dn.get("life_area")
+    sub = f"{g['name']} · {la} 생활권" if la else f"{g['name']} 방문 안내"
+    return {"label": pick(name, _RL_DONG).format(n=name), "sub": sub,
+            "url": DONG_URL[name]}
+
+
+def rel_station(name: str):
+    if name not in STATION_URL:
+        return None
+    obj = STATION_BY_NAME.get(name)
+    sub = (", ".join(obj["lines"]) if obj else "") or "역세권 방문 안내"
+    return {"label": pick(name, _RL_STATION).format(n=name), "sub": sub,
+            "url": STATION_URL[name]}
+
+
+def rel_life(name: str):
+    if name not in LIFE_URL:
+        return None
+    obj = LIFE_BY_NAME.get(name)
+    sub = obj["role"] if obj else "생활권 허브 안내"
+    return {"label": pick(name, _RL_LIFE).format(n=name), "sub": sub,
+            "url": LIFE_URL[name]}
+
+
+def rel_gu(name: str):
+    if name not in GU_URL:
+        return None
+    obj = GU_BY_NAME.get(name)
+    sub = (obj.get("trait", "") + " 자치구") if obj else "자치구 안내"
+    return {"label": pick(name, _RL_GU).format(n=name), "sub": sub,
+            "url": GU_URL[name]}
+
+
+REL_INFO = [
+    {"label": "예약 안내·요금 기준", "sub": "코스별 기본 요금·예약 절차", "url": "/reservation/"},
+    {"label": "이용 전 확인사항", "sub": "방문 전 필수 체크 항목", "url": "/check/"},
+]
+
+
+def dedupe_rel(items):
+    """url 기준 중복 제거, None 제거."""
+    seen, out = set(), []
+    for it in items:
+        if not it or it["url"] in seen:
+            continue
+        seen.add(it["url"])
+        out.append(it)
+    return out
 
 
 # ── 행정구 페이지 ───────────────────────────────────────────
@@ -288,8 +356,12 @@ def gu_body(g) -> str:
     parts.append(closing_block(name, slug))
 
     # 관련 링크
-    rel = [(f"{dn['name']}", f"/seoul/{slug}/{dn['slug']}/") for dn in g["dongs"][:4]]
-    rel += [("예약 안내", "/reservation/"), ("이용 전 확인사항", "/check/")]
+    rel = dedupe_rel(
+        [rel_dong(dn["name"]) for dn in g["dongs"][:3]]
+        + [rel_station(s) for s in g["stations"][:2]]
+        + [rel_life(la) for la in g["life_areas"][:1]]
+        + REL_INFO
+    )
     parts.append(related_block(rel))
 
     return "\n".join(parts), faq
@@ -378,16 +450,13 @@ def dong_body(g, dn) -> str:
     parts.append(faq_block(faq))
     parts.append(closing_block(name, slug))
 
-    rel = []
-    for s in near_st[:2]:
-        if s in STATION_URL:
-            rel.append((s, STATION_URL[s]))
-    if dn.get("life_area") in LIFE_URL:
-        rel.append((dn["life_area"] + " 생활권", LIFE_URL[dn["life_area"]]))
-    rel.append((g["name"], GU_URL[g["name"]]))
-    for d in near_dong[:2]:
-        if d in DONG_URL:
-            rel.append((d, DONG_URL[d]))
+    rel = dedupe_rel(
+        [rel_station(s) for s in near_st[:2]]
+        + [rel_life(dn.get("life_area"))]
+        + [rel_gu(g["name"])]
+        + [rel_dong(d) for d in near_dong[:3]]
+        + REL_INFO[:1]
+    )
     parts.append(related_block(rel))
 
     return "\n".join(parts), faq
@@ -472,15 +541,12 @@ def station_body(s) -> str:
     parts.append(faq_block(faq))
     parts.append(closing_block(name, slug))
 
-    rel = []
-    for d in near_dong[:3]:
-        if d in DONG_URL:
-            rel.append((d, DONG_URL[d]))
-    if life in LIFE_URL:
-        rel.append((life + " 생활권", LIFE_URL[life]))
-    for x in near_gu[:1]:
-        if x in GU_URL:
-            rel.append((x, GU_URL[x]))
+    rel = dedupe_rel(
+        [rel_dong(d) for d in near_dong[:3]]
+        + [rel_life(life)]
+        + [rel_gu(x) for x in near_gu[:2]]
+        + REL_INFO[:1]
+    )
     parts.append(related_block(rel))
 
     return "\n".join(parts), faq
@@ -570,13 +636,12 @@ def life_body(l) -> str:
     parts.append(faq_block(faq))
     parts.append(closing_block(name, slug))
 
-    rel = []
-    for s in l.get("stations", [])[:2]:
-        if s in STATION_URL:
-            rel.append((s, STATION_URL[s]))
-    for d in l.get("dongs", [])[:2]:
-        if d in DONG_URL:
-            rel.append((d, DONG_URL[d]))
+    rel = dedupe_rel(
+        [rel_station(s) for s in l.get("stations", [])[:2]]
+        + [rel_dong(d) for d in l.get("dongs", [])[:3]]
+        + [rel_gu(x) for x in l.get("gu", [])[:2]]
+        + REL_INFO[:1]
+    )
     parts.append(related_block(rel))
 
     return "\n".join(parts), faq
