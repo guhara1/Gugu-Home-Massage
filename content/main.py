@@ -13,7 +13,7 @@ def _hero():
     return """<section class="hero">
   <div class="hero-content">
     <span class="hero-badge">서울 전지역 방문 관리 · 24시간 상담</span>
-    <h1 class="hero-title">서울 <span class="hero-accent">출장마사지</span> · 서울 홈타이<br>지역별 예약 안내</h1>
+    <h1 class="hero-title">서울 <span class="hero-accent">출장마사지</span> · 홈타이<br>지역별 예약 안내</h1>
     <p class="hero-lead">서울 25개 행정구, 주요 행정동, 지하철역, 생활권별 방문 가능 지역과
     예약 전 확인사항을 안내합니다. 위치를 좁혀가며 빠르게 확인하세요.</p>
     <div class="hero-cta">
@@ -191,7 +191,7 @@ PAGE = {
     "path": "",
     "title": "서울 출장마사지｜강남·잠실·홍대·여의도 홈타이 지역 안내",
     "desc": "서울 출장마사지·홈타이 예약 전 강남, 잠실, 홍대, 여의도 등 주요 생활권을 확인하세요.",
-    "h1": "서울 출장마사지 · 서울 홈타이 지역별 예약 안내",
+    "h1": "서울 출장마사지 · 홈타이 지역별 예약 안내",
     "hero": _hero(),
     "body": _body(),
     "extra_head": _schema(),
