@@ -252,6 +252,93 @@ def closing_block(name: str, slug: str) -> str:
     return f"<section><p>{pick(slug, _CLOSING).format(name=name)}</p></section>"
 
 
+def longtail_block(title, chips):
+    """롱테일 주제 칩 내부링크. chips: [(label, url), ...] (None / (label,url) 중복 제거)."""
+    seen, html_parts = set(), []
+    for c in chips:
+        if not c:
+            continue
+        label, url = c
+        if (label, url) in seen:
+            continue
+        seen.add((label, url))
+        html_parts.append(f'<a class="lt-chip" href="{url}">{label}</a>')
+    return (
+        f'<section class="longtail"><h2>{title}</h2>'
+        f'<div class="lt-chips">{"".join(html_parts)}</div></section>'
+    )
+
+
+def dong_longtail(g, dn):
+    name, life = dn["name"], dn.get("life_area")
+    chips = [
+        (f"{name} 자택 출장마사지", "/guide/"),
+        (f"{name} 오피스텔 홈타이", "/guide/"),
+        (f"{name} 호텔·숙소 방문 마사지", "/guide/"),
+        (f"{name} 코스별 요금 안내", "/reservation/"),
+        (f"{name} 예약 전 확인사항", "/check/"),
+        (f"{g['name']} 출장마사지 지역 안내", f"/seoul/{g['slug']}/"),
+    ]
+    for s in dn.get("nearby_stations", [])[:2]:
+        if s in STATION_URL:
+            chips.append((f"{s} 인근 홈타이", STATION_URL[s]))
+    if life in LIFE_URL:
+        chips.append((f"{life} 생활권 방문 안내", LIFE_URL[life]))
+    return longtail_block(f"{name} 주제별 안내 바로가기", chips)
+
+
+def station_longtail(s):
+    name, life = s["name"], s.get("life_area")
+    chips = [
+        (f"{name} 인근 자택 출장마사지", "/guide/"),
+        (f"{name} 근처 오피스텔 홈타이", "/guide/"),
+        (f"{name} 주변 호텔 방문 마사지", "/guide/"),
+        (f"{name} 출장마사지 요금 안내", "/reservation/"),
+        (f"{name} 예약 전 확인사항", "/check/"),
+    ]
+    for d in s.get("nearby_dongs", [])[:2]:
+        if d in DONG_URL:
+            chips.append((f"{d} 방문 안내", DONG_URL[d]))
+    if life in LIFE_URL:
+        chips.append((f"{life} 생활권 홈타이", LIFE_URL[life]))
+    return longtail_block(f"{name} 주제별 안내 바로가기", chips)
+
+
+def life_longtail(l):
+    name = l["name"]
+    chips = [
+        (f"{name} 자택 출장마사지", "/guide/"),
+        (f"{name} 오피스텔·호텔 홈타이", "/guide/"),
+        (f"{name} 코스별 요금 안내", "/reservation/"),
+        (f"{name} 예약 전 확인사항", "/check/"),
+    ]
+    for x in l.get("gu", [])[:2]:
+        if x in GU_URL:
+            chips.append((f"{x} 출장마사지 지역 안내", GU_URL[x]))
+    for st in l.get("stations", [])[:2]:
+        if st in STATION_URL:
+            chips.append((f"{st} 인근 홈타이", STATION_URL[st]))
+    return longtail_block(f"{name} 주제별 안내 바로가기", chips)
+
+
+def gu_longtail(g):
+    name = g["name"]
+    chips = [
+        (f"{name} 자택 출장마사지", "/guide/"),
+        (f"{name} 오피스텔 홈타이", "/guide/"),
+        (f"{name} 호텔·숙소 방문 마사지", "/guide/"),
+        (f"{name} 코스별 요금 안내", "/reservation/"),
+        (f"{name} 예약 전 확인사항", "/check/"),
+    ]
+    for la in g.get("life_areas", [])[:2]:
+        if la in LIFE_URL:
+            chips.append((f"{la} 생활권 방문 안내", LIFE_URL[la]))
+    for st in g.get("stations", [])[:2]:
+        if st in STATION_URL:
+            chips.append((f"{st} 인근 홈타이", STATION_URL[st]))
+    return longtail_block(f"{name} 주제별 안내 바로가기", chips)
+
+
 def related_block(items) -> str:
     """롱테일 주제 카드 목록. items: [{label, sub, url}, ...] (None 무시)."""
     cards = ""
@@ -422,6 +509,7 @@ def gu_body(g) -> str:
         + [rel_life(la) for la in g["life_areas"][:1]]
         + REL_INFO
     )
+    parts.append(gu_longtail(g))
     parts.append(related_block(rel))
 
     return "\n".join(parts), faq
@@ -517,6 +605,7 @@ def dong_body(g, dn) -> str:
         + [rel_dong(d) for d in near_dong[:3]]
         + REL_INFO[:1]
     )
+    parts.append(dong_longtail(g, dn))
     parts.append(related_block(rel))
 
     return "\n".join(parts), faq
@@ -604,6 +693,7 @@ def station_body(s) -> str:
         + [rel_gu(x) for x in near_gu[:2]]
         + REL_INFO[:1]
     )
+    parts.append(station_longtail(s))
     parts.append(related_block(rel))
 
     return "\n".join(parts), faq
@@ -699,6 +789,7 @@ def life_body(l) -> str:
         + [rel_gu(x) for x in l.get("gu", [])[:2]]
         + REL_INFO[:1]
     )
+    parts.append(life_longtail(l))
     parts.append(related_block(rel))
 
     return "\n".join(parts), faq

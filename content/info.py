@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """정보 페이지: 예약 안내·이용 전 확인사항·홈타이 가이드·고객센터·개인정보처리방침."""
+import json
+
 from content import generate as G
-from content.site import BRAND, PHONE, PHONE_DISPLAY, TELEGRAM_URL
+from content import reviews as RV
+from content.site import BRAND, PHONE, PHONE_DISPLAY, TELEGRAM_URL, BASE_URL
 
 
 def _faq(pairs):
@@ -369,6 +372,95 @@ def _privacy():
         "h1": "개인정보처리방침",
         "breadcrumb": [("고객센터", "/support/"), ("개인정보처리방침", None)],
         "body": body,
+        "no_reviews": True,
+    }
+
+
+# ── 이용 후기 ──────────────────────────────────────────
+def _stars(r):
+    r = int(round(r))
+    return "★" * r + "☆" * (5 - r)
+
+
+def _reviews():
+    agg = RV.aggregate()
+    base = BASE_URL.rstrip("/")
+    cards = ""
+    for rv in RV.REVIEWS:
+        cards += (
+            f'<article class="review-card">'
+            f'<div class="review-stars" aria-label="별점 {rv["rating"]}점">{_stars(rv["rating"])}</div>'
+            f'<p class="review-body">“{rv["body"]}”</p>'
+            f'<p class="review-meta"><span class="review-author">{rv["author"]}</span>'
+            f'<span class="review-area">{rv.get("area","")}</span>'
+            f'<time datetime="{rv["date"]}">{rv["date"]}</time></p></article>'
+        )
+    body = (
+        "<section><p>구구 마사지 서울 출장마사지·홈타이를 이용하신 고객의 후기를 "
+        "모았습니다. 후기는 실제 이용 고객이 남긴 내용을 바탕으로 하며, 방문 지역·코스·"
+        "응대에 대한 솔직한 의견을 담고 있습니다. 예약 전 참고하시면 도움이 됩니다.</p>"
+        f'<div class="reviews-score reviews-score-lg"><span class="reviews-avg">{agg["value"]}</span>'
+        f'<span class="reviews-stars">{_stars(agg["value"])}</span>'
+        f'<span class="reviews-count">5점 만점 · 누적 후기 {agg["count"]}개</span></div></section>'
+        f'<section><h2>고객 후기 전체</h2><div class="reviews-grid reviews-grid-full">{cards}</div></section>'
+        "<section><h2>후기는 어떻게 반영되나요</h2>"
+        "<p>구구 마사지는 건전한 방문 관리 서비스만 운영하며, 후기는 위생·안전 기준과 "
+        "시간 약속, 응대 친절도에 대한 평가가 중심입니다. 평점은 실제 이용 고객이 남긴 "
+        "별점을 누적해 산출하며, 특정 평가를 임의로 높이거나 낮추지 않습니다. 좋은 "
+        "후기뿐 아니라 개선이 필요한 의견도 서비스 품질을 높이는 데 그대로 반영하려고 "
+        "노력합니다.</p>"
+        "<p>지역별로는 강남·역삼, 잠실·송파, 홍대·합정, 여의도·영등포 등 다양한 생활권에서 "
+        "자택·오피스텔·호텔·숙소 방문 이용 후기가 이어지고 있습니다. 코스는 60분·90분·"
+        "120분 중 선택하실 수 있으며, 처음 이용하시는 분은 "
+        '<a href="/guide/">홈타이 이용 가이드</a>의 방문 흐름을 먼저 보시면 도움이 '
+        "됩니다.</p></section>"
+        "<section><h2>후기 관련 자주 묻는 질문</h2>"
+        '<dl class="faq-list">'
+        "<dt>후기는 실제 고객이 작성한 내용인가요?</dt>"
+        "<dd>네. 표시되는 후기와 평점은 실제 이용 고객의 평가를 바탕으로 합니다. "
+        "허위 후기나 임의 평점은 사용하지 않습니다.</dd>"
+        "<dt>후기를 남기려면 어떻게 하나요?</dt>"
+        "<dd>이용 후 예약 상담 연락처로 의견을 남겨주시면 됩니다. 소중한 후기는 "
+        "서비스 개선에 반영합니다.</dd>"
+        "<dt>평점은 어떻게 산출되나요?</dt>"
+        "<dd>고객이 남긴 별점(5점 만점)을 누적 평균하여 표시합니다.</dd>"
+        "</dl></section>"
+    )
+    offers = [{"@type": "Offer", "name": n, "price": p, "priceCurrency": "KRW",
+               "availability": "https://schema.org/InStock", "url": base + "/reservation/"}
+              for n, p in [("60분 코스", "90000"), ("90분 코스", "150000"), ("120분 코스", "180000")]]
+    service = {
+        "@context": "https://schema.org", "@type": "Service",
+        "name": "서울 출장마사지·홈타이 방문 관리",
+        "serviceType": ["출장마사지", "홈타이", "방문 마사지"],
+        "provider": {"@id": base + "/#organization"},
+        "areaServed": {"@type": "AdministrativeArea", "name": "서울특별시"},
+        "url": base + "/reviews/",
+        "offers": {"@type": "AggregateOffer", "priceCurrency": "KRW",
+                   "lowPrice": "90000", "highPrice": "180000", "offerCount": "3",
+                   "offers": offers},
+        "aggregateRating": {"@type": "AggregateRating", "ratingValue": str(agg["value"]),
+                            "reviewCount": str(agg["count"]), "bestRating": "5",
+                            "worstRating": str(agg["worst"])},
+        "review": [{"@type": "Review",
+                    "author": {"@type": "Person", "name": rv["author"]},
+                    "datePublished": rv["date"],
+                    "reviewRating": {"@type": "Rating", "ratingValue": str(rv["rating"]),
+                                     "bestRating": "5", "worstRating": "1"},
+                    "reviewBody": rv["body"]} for rv in RV.REVIEWS],
+    }
+    extra_head = ('<script type="application/ld+json">\n'
+                  + json.dumps(service, ensure_ascii=False, indent=2)
+                  + "\n</script>\n")
+    return {
+        "path": "reviews/",
+        "title": "이용 후기｜서울 출장마사지·홈타이 고객 후기 - 구구 마사지",
+        "desc": "구구 마사지 서울 출장마사지·홈타이 실제 이용 고객 후기와 평점을 확인하세요.",
+        "h1": "이용 후기 · 고객 평점",
+        "breadcrumb": [("이용 후기", None)],
+        "body": body,
+        "extra_head": extra_head,
+        "no_reviews": True,
     }
 
 
@@ -376,6 +468,7 @@ PAGES = [
     _reservation(),
     _check(),
     _guide(),
+    _reviews(),
     _support(),
     _privacy(),
 ]

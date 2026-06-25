@@ -62,7 +62,22 @@ python3 build.py
 
 - `Organization`(전역) · `WebPage`(`primaryImageOfPage` 포함) · `BreadcrumbList`
 - `FAQPage`(FAQ 보유 페이지) · 메인은 `ItemList`(25개 구) 추가
+- `Service` — 페이지별 `areaServed`(구/동/역/생활권), `AggregateOffer`(60·90·120분 요금),
+  `AggregateRating`(평점)·`Review`(후기). **페이지에 실제로 보이는 후기 섹션과 1:1 일치**
 - 선호 썸네일: `og:image` + `ImageObject`로 `assets/og-image.svg` 지정
+
+### 이용 후기·평점 (`content/reviews.py`)
+
+전 페이지 하단 '이용 후기' 섹션 + `/reviews/` 전체 후기 페이지. ⚠️ **구글 정책상 리뷰·평점
+구조화 데이터는 실제 후기에 근거해야 합니다.** `content/reviews.py`의 샘플 후기를 실제
+수집한 후기로 교체하세요(허위 평점 마크업은 검색 패널티 사유). 평점·후기 수는 데이터에서
+자동 산출됩니다.
+
+### 롱테일 내부링크 강화
+
+- 메인: '서울 지역별 바로가기' 허브(25개 구·22개 생활권·핵심 역 롱테일 앵커)
+- 전 지역 페이지: '주제별 안내 바로가기' 칩(자택/오피스텔/호텔·요금·확인사항·인근 지역) +
+  '관련 지역·생활권' 카드 + 푸터 주요 지역 링크
 
 ## 현재 페이지 구성
 

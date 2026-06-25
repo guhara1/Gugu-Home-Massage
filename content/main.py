@@ -88,6 +88,36 @@ FAQ = [
 ]
 
 
+def _region_hub():
+    """메인 → 전 지역(구·생활권·역) 롱테일 내부링크 허브."""
+    gu = "".join(
+        f'<li><a href="/seoul/{g["slug"]}/">{g["name"]} 출장마사지·홈타이</a></li>'
+        for g in D.GU
+    )
+    life = "".join(
+        f'<li><a href="/seoul/life/{l["slug"]}/">{l["name"]} 생활권 방문 안내</a></li>'
+        for l in D.LIFE
+    )
+    key_st = ["강남역", "잠실역", "홍대입구역", "여의도역", "건대입구역", "성수역",
+              "용산역", "서울역", "사당역", "신도림역", "교대역", "고속터미널역",
+              "왕십리역", "노원역", "상봉역", "청량리역", "신촌역", "영등포역"]
+    st_map = {s["name"]: s["slug"] for s in D.STATIONS}
+    st = "".join(
+        f'<li><a href="/seoul/station/{st_map[n]}/">{n} 인근 출장마사지</a></li>'
+        for n in key_st if n in st_map
+    )
+    return (
+        '<section class="region-hub"><h2>서울 지역별 출장마사지·홈타이 바로가기</h2>'
+        "<p>찾으시는 지역을 눌러 행정구·생활권·역세권별 방문 안내로 바로 이동하세요. "
+        "서울 25개 자치구와 주요 생활권·역세권을 모두 안내합니다.</p>"
+        '<div class="hub-cols">'
+        f'<div class="hub-col"><h3>행정구별 안내</h3><ul class="hub-links">{gu}</ul></div>'
+        f'<div class="hub-col"><h3>생활권별 안내</h3><ul class="hub-links">{life}</ul></div>'
+        f'<div class="hub-col"><h3>역세권별 안내</h3><ul class="hub-links">{st}</ul></div>'
+        "</div></section>"
+    )
+
+
 def _body():
     parts = []
     parts.append(
@@ -130,6 +160,7 @@ def _body():
         f'<a href="/seoul/life/">생활권 안내</a>에서 확인할 수 있습니다.</p>'
         f'<div class="card-grid">{_life_cards()}</div></section>'
     )
+    parts.append(_region_hub())
     parts.append(G.pricing_block())
     parts.append(G.check_block("서울 전지역 자택·오피스텔·호텔·숙소"))
     parts.append(G.faq_block(FAQ))

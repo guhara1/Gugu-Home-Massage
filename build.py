@@ -19,12 +19,16 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from content import PAGES
+from content import reviews as RV
 from datetime import datetime, timezone
 
 from content.site import (BASE_URL, BRAND, BRAND_MARK, NAV, PHONE,
                           PHONE_DISPLAY, TELEGRAM_URL, AREA_SERVED, FOOTER_QUICK,
                           NAVER_SITE_VERIFICATION, GOOGLE_SITE_VERIFICATION,
                           INDEXNOW_KEY)
+
+# 코스 요금(요금표와 동일) — Offer 스키마용
+COURSE_OFFERS = [("60분 코스", "90000"), ("90분 코스", "150000"), ("120분 코스", "180000")]
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 # Cloudflare Pages가 저장소 루트를 그대로 배포하므로 결과물을 루트에 출력한다.
@@ -213,6 +217,77 @@ def make_faq_schema(faq) -> dict:
     }
 
 
+def _stars(rating) -> str:
+    full = int(round(rating))
+    return "★" * full + "☆" * (5 - full)
+
+
+def render_reviews(shown, agg) -> str:
+    """페이지 하단 '이용 후기' 가시 섹션(스키마와 1:1 일치)."""
+    if not shown:
+        return ""
+    cards = ""
+    for rv in shown:
+        cards += (
+            f'<article class="review-card">'
+            f'<div class="review-stars" aria-label="별점 {rv["rating"]}점">{_stars(rv["rating"])}</div>'
+            f'<p class="review-body">“{rv["body"]}”</p>'
+            f'<p class="review-meta"><span class="review-author">{rv["author"]}</span>'
+            f'<span class="review-area">{rv.get("area","")}</span>'
+            f'<time datetime="{rv["date"]}">{rv["date"]}</time></p></article>'
+        )
+    return (
+        '<section class="reviews-band" aria-label="이용 후기"><div class="container">'
+        '<div class="reviews-head"><h2>이용 후기</h2>'
+        f'<div class="reviews-score"><span class="reviews-avg">{agg["value"]}</span>'
+        f'<span class="reviews-stars" aria-hidden="true">{_stars(agg["value"])}</span>'
+        f'<span class="reviews-count">5점 만점 · 누적 후기 {agg["count"]}개</span></div></div>'
+        f'<div class="reviews-grid">{cards}</div>'
+        '<p class="reviews-note">실제 이용 고객이 남긴 후기를 바탕으로 합니다. '
+        '<a href="/reviews/">전체 후기 보기 →</a></p>'
+        '</div></section>'
+    )
+
+
+def make_service_schema(area_name: str, canonical: str, shown, agg) -> dict:
+    """Service + AggregateOffer(요금) + AggregateRating/Review(후기) 스키마."""
+    base = BASE_URL.rstrip("/")
+    offers = [{
+        "@type": "Offer", "name": n, "price": p, "priceCurrency": "KRW",
+        "availability": "https://schema.org/InStock", "url": base + "/reservation/",
+    } for n, p in COURSE_OFFERS]
+    sch = {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "서울 출장마사지·홈타이 방문 관리",
+        "serviceType": ["출장마사지", "홈타이", "방문 마사지"],
+        "provider": {"@id": base + "/#organization"},
+        "areaServed": {"@type": "AdministrativeArea", "name": area_name},
+        "url": canonical,
+        "offers": {
+            "@type": "AggregateOffer", "priceCurrency": "KRW",
+            "lowPrice": "90000", "highPrice": "180000", "offerCount": "3",
+            "offers": offers,
+        },
+    }
+    if agg["count"]:
+        sch["aggregateRating"] = {
+            "@type": "AggregateRating",
+            "ratingValue": str(agg["value"]), "reviewCount": str(agg["count"]),
+            "bestRating": "5", "worstRating": str(agg["worst"]),
+        }
+    if shown:
+        sch["review"] = [{
+            "@type": "Review",
+            "author": {"@type": "Person", "name": rv["author"]},
+            "datePublished": rv["date"],
+            "reviewRating": {"@type": "Rating", "ratingValue": str(rv["rating"]),
+                             "bestRating": "5", "worstRating": "1"},
+            "reviewBody": rv["body"],
+        } for rv in shown]
+    return sch
+
+
 def render_page(page: dict) -> str:
     path = page["path"]
     title = page["title"]
@@ -255,6 +330,15 @@ def render_page(page: dict) -> str:
         if faq:
             blocks.append(make_faq_schema(faq))
         auto_schema = "".join(_ld(b) for b in blocks)
+
+    # 서비스(요금 Offer) + 후기/평점 스키마 + 가시 후기 섹션
+    area_name = page.get("area_name", AREA_SERVED)
+    no_reviews = page.get("no_reviews", False)
+    agg = RV.aggregate()
+    shown = RV.shown_for(path or "home") if not no_reviews else []
+    reviews_html = render_reviews(shown, agg)
+    if not no_reviews:
+        auto_schema += _ld(make_service_schema(area_name, canonical, shown, agg))
 
     base = BASE_URL.rstrip("/")
     return f"""<!DOCTYPE html>
@@ -313,6 +397,7 @@ def render_page(page: dict) -> str:
       {body}
     </article>
   </div>
+  {reviews_html}
 </main>
 <footer class="site-footer" role="contentinfo">
   <div class="container footer-grid">
@@ -339,6 +424,7 @@ def render_page(page: dict) -> str:
       <p class="footer-title">이용 안내</p>
       <ul>
         <li><a href="/reservation/">예약 안내</a></li>
+        <li><a href="/reviews/">이용 후기</a></li>
         <li><a href="/check/">이용 전 확인사항</a></li>
         <li><a href="/guide/">홈타이 이용 가이드</a></li>
         <li><a href="/support/">고객센터</a></li>

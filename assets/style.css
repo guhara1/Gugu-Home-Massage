@@ -1347,3 +1347,89 @@ h1 { border-bottom: 2px solid transparent; border-image: var(--grad-amber) 1; le
 @media (max-width: 600px) {
   .footer-quick { justify-content: flex-start; }
 }
+
+/* ════════════════════════════════════════════
+   롱테일 내부링크(주제 칩 · 지역 허브) + 이용 후기
+   ════════════════════════════════════════════ */
+
+/* 주제별 롱테일 칩 */
+.longtail { margin-top: 40px; }
+.lt-chips { display: flex; flex-wrap: wrap; gap: 9px; }
+.lt-chip {
+  font-size: 0.88rem; color: var(--text-dim);
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--glass); border: 1px solid var(--line);
+  transition: var(--transition);
+}
+.lt-chip:hover {
+  color: var(--orange-light);
+  border-color: rgba(255, 122, 47, 0.5);
+  background: var(--overlay-amber);
+}
+
+/* 메인 지역 허브(롱테일 링크 다열) */
+.region-hub { margin-top: 48px; }
+.hub-cols {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+  margin-top: 8px;
+}
+.hub-col h3 {
+  font-size: 1.05rem; color: var(--orange-light);
+  margin: 0 0 12px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.hub-links { list-style: none; margin: 0; padding: 0; }
+.hub-links li { margin: 0 0 4px; }
+.hub-links a {
+  display: block; font-size: 0.9rem; color: var(--text-dim);
+  padding: 6px 10px; border-radius: 8px; transition: var(--transition);
+}
+.hub-links a:hover { color: var(--orange-light); background: var(--glass); }
+
+/* 이용 후기 밴드 */
+.reviews-band {
+  margin-top: 8px; padding: 44px 0;
+  background:
+    radial-gradient(ellipse 60% 120% at 50% -10%, var(--overlay-amber), transparent 60%),
+    var(--bg-2);
+  border-top: 1px solid var(--line);
+}
+.reviews-head {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 14px; margin-bottom: 24px;
+}
+.reviews-head h2 { margin: 0; padding: 0; }
+.reviews-head h2::before { display: none; }
+.reviews-score { display: inline-flex; align-items: baseline; gap: 10px; }
+.reviews-score-lg { margin-top: 14px; font-size: 1.1rem; }
+.reviews-avg {
+  font-family: var(--serif); font-weight: 900; font-size: 1.9rem;
+  background: var(--grad-premium); -webkit-background-clip: text;
+  background-clip: text; color: transparent;
+}
+.reviews-stars { color: #FFC15A; letter-spacing: 2px; font-size: 1.05rem; }
+.reviews-count { color: var(--text-dim); font-size: 0.86rem; }
+.reviews-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+}
+.reviews-grid-full { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.review-card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 22px 20px;
+  box-shadow: var(--shadow-sm);
+}
+.review-stars { color: #FFC15A; letter-spacing: 2px; margin-bottom: 10px; }
+.review-body { color: var(--text); font-size: 0.95rem; line-height: 1.8; margin-bottom: 14px; }
+.review-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.82rem; color: var(--text-mute); margin: 0; }
+.review-author { font-weight: 700; color: var(--text-dim); }
+.review-area { color: var(--orange-light); }
+.reviews-note { margin: 22px 0 0; font-size: 0.88rem; color: var(--text-dim); }
+.reviews-note a { color: var(--gold-soft); font-weight: 700; }
+
+@media (max-width: 900px) {
+  .hub-cols { grid-template-columns: 1fr 1fr; }
+  .reviews-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .hub-cols, .reviews-grid { grid-template-columns: 1fr; }
+}
