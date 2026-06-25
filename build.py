@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from content import PAGES
 from content.site import (BASE_URL, BRAND, BRAND_MARK, NAV, PHONE,
-                          PHONE_DISPLAY, TELEGRAM_URL, AREA_SERVED)
+                          PHONE_DISPLAY, TELEGRAM_URL, AREA_SERVED, FOOTER_QUICK)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 # Cloudflare Pages가 저장소 루트를 그대로 배포하므로 결과물을 루트에 출력한다.
@@ -216,12 +216,8 @@ def render_page(page: dict) -> str:
     faq = page.get("faq") or []
 
     chars = text_length(body)
-    noindex = page.get("noindex", False) or chars < MIN_INDEX_CHARS
-    robots = (
-        '<meta name="robots" content="noindex,follow">'
-        if noindex
-        else '<meta name="robots" content="index,follow,max-image-preview:large">'
-    )
+    # 모든 페이지 색인 — noindex 미사용(정책)
+    robots = '<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">'
     canonical = BASE_URL.rstrip("/") + "/" + path
 
     page_head = hero if hero else ""
@@ -299,12 +295,13 @@ def render_page(page: dict) -> str:
     </article>
   </div>
 </main>
-<footer class="site-footer">
+<footer class="site-footer" role="contentinfo">
   <div class="container footer-grid">
     <div class="footer-col footer-about">
-      <p class="footer-brand">{BRAND}</p>
-      <p class="footer-desc">서울 전지역 방문 출장마사지·홈타이 안내 사이트입니다. 모든 서비스는 안내된 관리 범위와 위생·안전 기준 안에서만 제공됩니다.</p>
+      <a class="footer-brandwrap" href="/"><span class="brand-mark footer-mark">{BRAND_MARK}</span> <span class="footer-brand">{BRAND}</span></a>
+      <p class="footer-desc">{BRAND}는 서울 전지역 출장마사지·홈타이 방문 관리를 안내합니다. 서울 25개 행정구와 주요 지하철역·생활권별 방문 가능 지역, 예약 절차를 한곳에서 확인할 수 있습니다.</p>
       <address class="footer-contact">
+        <span class="footer-contact-row"><span class="footer-label">상호</span> {BRAND}</span>
         <span class="footer-contact-row"><span class="footer-label">예약전화</span> <a href="tel:{PHONE}">{PHONE_DISPLAY}</a></span>
         <span class="footer-contact-row"><span class="footer-label">상담시간</span> 연중무휴 24시간</span>
         <span class="footer-contact-row"><span class="footer-label">서비스 지역</span> 서울특별시 전지역</span>
@@ -313,7 +310,7 @@ def render_page(page: dict) -> str:
     <nav class="footer-col" aria-label="지역 안내">
       <p class="footer-title">지역 안내</p>
       <ul>
-        <li><a href="/seoul/area/">서울 25개 행정구</a></li>
+        <li><a href="/seoul/area/">서울 행정구 안내</a></li>
         <li><a href="/seoul/gangnam-gu/yeoksam-dong/">행정동 안내</a></li>
         <li><a href="/seoul/station/">지하철역 안내</a></li>
         <li><a href="/seoul/life/">생활권 안내</a></li>
@@ -322,24 +319,30 @@ def render_page(page: dict) -> str:
     <nav class="footer-col" aria-label="이용 안내">
       <p class="footer-title">이용 안내</p>
       <ul>
-        <li><a href="/reservation/">예약안내</a></li>
+        <li><a href="/reservation/">예약 안내</a></li>
         <li><a href="/check/">이용 전 확인사항</a></li>
         <li><a href="/guide/">홈타이 이용 가이드</a></li>
         <li><a href="/support/">고객센터</a></li>
       </ul>
     </nav>
-    <nav class="footer-col" aria-label="정책 및 기준">
-      <p class="footer-title">정책</p>
+    <nav class="footer-col" aria-label="정책 및 문의">
+      <p class="footer-title">정책·문의</p>
       <ul>
         <li><a href="/support/privacy/">개인정보처리방침</a></li>
-        <li><a href="{TELEGRAM_URL}" target="_blank" rel="noopener nofollow">문의하기</a></li>
+        <li><a href="tel:{PHONE}">전화 예약 {PHONE_DISPLAY}</a></li>
+        <li><a href="{TELEGRAM_URL}" target="_blank" rel="noopener nofollow">제작·제휴 문의</a></li>
       </ul>
     </nav>
   </div>
+  <nav class="container footer-quick" aria-label="주요 지역 바로가기">
+    <span class="footer-quick-label">주요 지역</span>
+    {"".join(f'<a href="{u}">{l}</a>' for l, u in FOOTER_QUICK)}
+  </nav>
   <div class="footer-bottom">
     <div class="container footer-bottom-inner">
-      <p class="footer-copy">&copy; {BRAND}. All rights reserved.</p>
+      <p class="footer-biz">상호 {BRAND} · 예약전화 <a href="tel:{PHONE}">{PHONE_DISPLAY}</a> · 서비스 지역 서울특별시 전지역 · 상담 연중무휴 24시간</p>
       <p class="footer-note">건전한 방문 관리 서비스를 운영하며, 불법·선정적 요청은 어떤 경우에도 응하지 않습니다.</p>
+      <p class="footer-copy">&copy; {BRAND}. All rights reserved.</p>
       <div class="footer-actions">
         <a class="btn-telegram" href="{TELEGRAM_URL}" target="_blank" rel="noopener nofollow" title="웹사이트 제작문의"><span class="btn-ic" aria-hidden="true">✦</span> 웹사이트 제작문의</a>
         <a class="btn-partnership" href="{TELEGRAM_URL}" target="_blank" rel="noopener nofollow" title="제휴문의"><span class="btn-ic" aria-hidden="true">✦</span> 제휴문의</a>
@@ -376,10 +379,9 @@ def build() -> None:
             f.write(html_out)
 
         chars = text_length(page["body"])
-        noindex = page.get("noindex", False) or chars < MIN_INDEX_CHARS
-        if not noindex:
-            sitemap_urls.append(BASE_URL.rstrip("/") + "/" + path)
-        report.append((path or "/", chars, "noindex" if noindex else "index"))
+        # 전 페이지 색인 + 사이트맵 포함
+        sitemap_urls.append(BASE_URL.rstrip("/") + "/" + path)
+        report.append((path or "/", chars, "THIN" if chars < MIN_INDEX_CHARS else "index"))
 
     urls = "\n".join(f"  <url><loc>{u}</loc></url>" for u in sitemap_urls)
     with open(os.path.join(PUBLIC_DIR, "sitemap.xml"), "w", encoding="utf-8") as f:
@@ -399,13 +401,14 @@ def build() -> None:
 
     width = max(len(p) for p, _, _ in report)
     print(f"{'PATH'.ljust(width)}  CHARS  ROBOTS")
-    noidx = 0
+    thin = 0
     for p, c, r in sorted(report):
-        if r == "noindex":
-            noidx += 1
-        flag = "  ⚠ <1500" if r == "noindex" and not p.endswith(("privacy/",)) else ""
+        if r == "THIN":
+            thin += 1
+        flag = "  ⚠ 1500자 미만" if r == "THIN" else ""
         print(f"{p.ljust(width)}  {str(c).rjust(5)}  {r}{flag}")
-    print(f"\n{len(report)} pages built, {len(sitemap_urls)} in sitemap, {noidx} noindex.")
+    print(f"\n{len(report)} pages built, all index, {len(sitemap_urls)} in sitemap, "
+          f"{thin} thin(<1500).")
 
 
 if __name__ == "__main__":

@@ -12,6 +12,20 @@ TELEGRAM_URL = "https://t.me/googleseolab"
 
 AREA_SERVED = "서울특별시"
 
+# 푸터 '주요 지역 바로가기' — 전 페이지 → 핵심 생활권으로의 내부링크(롱테일, 과도하지 않게 큐레이션)
+FOOTER_QUICK = [
+    ("강남·역삼 출장마사지", "/seoul/life/gangnam-yeoksam/"),
+    ("잠실·송파 홈타이", "/seoul/life/jamsil-songpa/"),
+    ("홍대·합정 출장마사지", "/seoul/life/hongdae-hapjeong/"),
+    ("여의도·영등포 홈타이", "/seoul/life/yeouido-yeongdeungpo/"),
+    ("성수·왕십리 출장마사지", "/seoul/life/seongsu-wangsimni/"),
+    ("건대·광진 홈타이", "/seoul/life/kondae-gwangjin/"),
+    ("용산·서울역 출장마사지", "/seoul/life/yongsan-seoul-station/"),
+    ("신림·관악 홈타이", "/seoul/life/sillim-gwanak/"),
+    ("종로·광화문 출장마사지", "/seoul/life/jongno-gwanghwamun/"),
+    ("명동·을지로 홈타이", "/seoul/life/myeongdong-euljiro/"),
+]
+
 # 상단 메뉴 — 키워드("출장마사지") 반복 없음, 지역·역·생활권 명칭만 표시
 NAV = [
     ("서울", "/", []),

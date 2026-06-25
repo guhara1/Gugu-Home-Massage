@@ -1304,3 +1304,46 @@ h1 { border-bottom: 2px solid transparent; border-image: var(--grad-amber) 1; le
 .line-stations a { color: var(--gold-soft); font-weight: 600; }
 .line-stations a:hover { color: var(--orange-light); }
 .line-empty { color: var(--text-mute); font-size: 0.88rem; }
+
+/* ════════════════════════════════════════════
+   SEO 최적화 푸터 보강
+   ════════════════════════════════════════════ */
+.footer-brandwrap {
+  display: inline-flex; align-items: center; gap: 10px;
+  margin-bottom: 14px; text-decoration: none;
+}
+.footer-mark { width: 32px; height: 32px; font-size: 0.86rem; }
+.footer-brandwrap .footer-brand { margin: 0; }
+
+/* 주요 지역 바로가기(롱테일 내부링크) */
+.footer-quick {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
+  max-width: var(--max); margin: 0 auto; padding: 22px 24px;
+  border-top: 1px solid var(--line);
+}
+.footer-quick-label {
+  font-size: 0.8rem; font-weight: 800; letter-spacing: 0.04em;
+  color: var(--gold-soft); margin-right: 4px;
+}
+.footer-quick a {
+  font-size: 0.84rem; color: var(--text-dim);
+  padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--glass); transition: var(--transition);
+}
+.footer-quick a:hover {
+  color: var(--orange-light);
+  border-color: rgba(255, 122, 47, 0.5);
+  background: var(--overlay-amber);
+}
+
+/* 사업자/연락처 한 줄(NAP) */
+.footer-biz {
+  font-size: 0.85rem; color: var(--text);
+  font-weight: 600; letter-spacing: 0.01em;
+}
+.footer-biz a { color: var(--orange-light); font-weight: 700; }
+.footer-bottom-inner .footer-copy { color: var(--text-mute); }
+
+@media (max-width: 600px) {
+  .footer-quick { justify-content: flex-start; }
+}
