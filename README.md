@@ -79,6 +79,32 @@ python3 build.py
 - **웹사이트 제작문의 · 제휴문의** 오렌지(앰버/골드) 프리미엄 버튼 → 텔레그램 연결
 - 텔레그램: `content/site.py`의 `TELEGRAM_URL`에서 변경
 
+## 색인 초고속화 (네이버·구글·빙)
+
+빌드 시 자동 생성: `sitemap.xml`(lastmod 포함) · `rss.xml`(전 페이지) · `robots.txt`(전 봇 허용 +
+사이트맵·RSS 안내) · `{INDEXNOW_KEY}.txt`(IndexNow 키 파일) · 메인 페이지 네이버 소유확인 메타.
+
+**1) 소유확인 / 사이트맵 제출 (배포 후 1회)**
+- 네이버 서치어드바이저: 메인 페이지 `naver-site-verification` 메타로 사이트 등록 →
+  `sitemap.xml`·`rss.xml` 제출
+- 구글 서치콘솔: 속성 등록 → `sitemap.xml` 제출 (`GOOGLE_SITE_VERIFICATION` 값을
+  `content/site.py`에 넣으면 메인에 메타 출력)
+- 빙 웹마스터: 사이트 추가 → 사이트맵 제출 (GSC 가져오기 가능)
+
+**2) IndexNow 즉시 통보 (빙·네이버 등) — 글 올릴 때마다**
+```bash
+python3 build.py                      # 산출물 갱신(키 파일 포함)
+# ↓ 배포 후(키 파일이 도메인 루트에 올라간 뒤) 실행
+python3 tools/indexnow.py             # 사이트맵 전체 일괄 통보(첫 통보)
+python3 tools/indexnow.py /seoul/gangnam-gu/yeoksam-dong/   # 특정 URL만
+```
+IndexNow는 `api.indexnow.org` 한 곳에 보내면 빙·네이버 등 참여 엔진에 전파됩니다.
+키 파일(`/{KEY}.txt`)이 도메인에 배포된 뒤 실행해야 검증됩니다.
+
+**3) 구글은 IndexNow 미참여** → 사이트맵(GSC) + 자연 크롤링이 기본.
+선택적으로 `tools/google_indexing.py`(서비스계정 필요, JobPosting/BroadcastEvent 위주 공식 지원).
+참고: 구글·빙의 `sitemap ping` 엔드포인트는 2023년 폐지되어 사용하지 않습니다.
+
 ## 배포 전 할 일
 
 1. `content/site.py`의 `BASE_URL`을 실제 도메인으로 변경 후 `python3 build.py` 재실행

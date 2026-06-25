@@ -12,6 +12,13 @@ TELEGRAM_URL = "https://t.me/googleseolab"
 
 AREA_SERVED = "서울특별시"
 
+# 검색엔진 사이트 소유확인(메인 페이지 head에 출력)
+NAVER_SITE_VERIFICATION = "e05c653caabdf0bef44983b1033eb3c140ae211a"
+GOOGLE_SITE_VERIFICATION = ""  # 구글 서치콘솔 HTML 태그 값(있으면 입력)
+
+# IndexNow(빙·네이버 등 즉시 색인 통보) 키 — /{KEY}.txt 로 루트에 게시됨
+INDEXNOW_KEY = "1e68090fb402a093772d9666cadfd172"
+
 # 푸터 '주요 지역 바로가기' — 전 페이지 → 핵심 생활권으로의 내부링크(롱테일, 과도하지 않게 큐레이션)
 FOOTER_QUICK = [
     ("강남·역삼 출장마사지", "/seoul/life/gangnam-yeoksam/"),

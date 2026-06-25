@@ -19,8 +19,12 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from content import PAGES
+from datetime import datetime, timezone
+
 from content.site import (BASE_URL, BRAND, BRAND_MARK, NAV, PHONE,
-                          PHONE_DISPLAY, TELEGRAM_URL, AREA_SERVED, FOOTER_QUICK)
+                          PHONE_DISPLAY, TELEGRAM_URL, AREA_SERVED, FOOTER_QUICK,
+                          NAVER_SITE_VERIFICATION, GOOGLE_SITE_VERIFICATION,
+                          INDEXNOW_KEY)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 # Cloudflare Pages가 저장소 루트를 그대로 배포하므로 결과물을 루트에 출력한다.
@@ -36,6 +40,11 @@ def text_length(body_html: str) -> int:
     text = html.unescape(text)
     text = re.sub(r"\s+", " ", text).strip()
     return len(text)
+
+
+def _xml(t: str) -> str:
+    """RSS/XML 텍스트 이스케이프."""
+    return html.escape(t or "", quote=True)
 
 
 def clamp_desc(desc: str) -> str:
@@ -220,6 +229,14 @@ def render_page(page: dict) -> str:
     robots = '<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1">'
     canonical = BASE_URL.rstrip("/") + "/" + path
 
+    # 검색엔진 소유확인 메타(메인 페이지에만 출력)
+    verify_meta = ""
+    if path == "":
+        if NAVER_SITE_VERIFICATION:
+            verify_meta += f'\n<meta name="naver-site-verification" content="{NAVER_SITE_VERIFICATION}">'
+        if GOOGLE_SITE_VERIFICATION:
+            verify_meta += f'\n<meta name="google-site-verification" content="{GOOGLE_SITE_VERIFICATION}">'
+
     page_head = hero if hero else ""
     h1_html = "" if hero else f"<h1>{h1}</h1>"
 
@@ -247,8 +264,10 @@ def render_page(page: dict) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{desc}">
-{robots}
+{robots}{verify_meta}
 <link rel="canonical" href="{canonical}">
+<link rel="alternate" type="application/rss+xml" title="{BRAND} 새 안내" href="/rss.xml">
+<link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
@@ -363,7 +382,11 @@ def render_page(page: dict) -> str:
 def build() -> None:
     report = []
     sitemap_urls = []
+    feed_items = []
     seen_paths = set()
+    now = datetime.now(timezone.utc)
+    lastmod = now.strftime("%Y-%m-%d")
+    pubdate = now.strftime("%a, %d %b %Y %H:%M:%S +0000")
 
     os.makedirs(PUBLIC_DIR, exist_ok=True)
 
@@ -379,11 +402,22 @@ def build() -> None:
             f.write(html_out)
 
         chars = text_length(page["body"])
-        # 전 페이지 색인 + 사이트맵 포함
-        sitemap_urls.append(BASE_URL.rstrip("/") + "/" + path)
+        # 전 페이지 색인 + 사이트맵/RSS 포함
+        url = BASE_URL.rstrip("/") + "/" + path
+        sitemap_urls.append(url)
+        feed_items.append((url, page["title"], clamp_desc(page["desc"])))
         report.append((path or "/", chars, "THIN" if chars < MIN_INDEX_CHARS else "index"))
 
-    urls = "\n".join(f"  <url><loc>{u}</loc></url>" for u in sitemap_urls)
+    base = BASE_URL.rstrip("/")
+    host = base.split("://", 1)[-1]
+
+    # sitemap.xml (lastmod 포함)
+    urls = "\n".join(
+        f"  <url><loc>{u}</loc><lastmod>{lastmod}</lastmod>"
+        f"<changefreq>{'daily' if u==base+'/' else 'weekly'}</changefreq>"
+        f"<priority>{'1.0' if u==base+'/' else '0.7'}</priority></url>"
+        for u in sitemap_urls
+    )
     with open(os.path.join(PUBLIC_DIR, "sitemap.xml"), "w", encoding="utf-8") as f:
         f.write(
             '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -391,10 +425,47 @@ def build() -> None:
             f"{urls}\n</urlset>\n"
         )
 
+    # rss.xml (네이버/구글 콘텐츠 발견 가속)
+    items = "\n".join(
+        "  <item>"
+        f"<title>{_xml(t)}</title>"
+        f"<link>{u}</link>"
+        f"<guid isPermaLink=\"true\">{u}</guid>"
+        f"<description>{_xml(d)}</description>"
+        f"<pubDate>{pubdate}</pubDate>"
+        "</item>"
+        for u, t, d in feed_items
+    )
+    with open(os.path.join(PUBLIC_DIR, "rss.xml"), "w", encoding="utf-8") as f:
+        f.write(
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n<channel>\n'
+            f"<title>{_xml(BRAND)} — 서울 출장마사지·홈타이 안내</title>\n"
+            f"<link>{base}/</link>\n"
+            f'<atom:link href="{base}/rss.xml" rel="self" type="application/rss+xml"/>\n'
+            "<description>서울 25개 행정구·지하철역·생활권별 방문 안내</description>\n"
+            "<language>ko-KR</language>\n"
+            f"<lastBuildDate>{pubdate}</lastBuildDate>\n"
+            f"{items}\n</channel>\n</rss>\n"
+        )
+
+    # IndexNow 키 파일(루트 게시) — 빙·네이버 즉시 색인 통보용
+    if INDEXNOW_KEY:
+        with open(os.path.join(PUBLIC_DIR, f"{INDEXNOW_KEY}.txt"), "w", encoding="utf-8") as f:
+            f.write(INDEXNOW_KEY + "\n")
+
+    # robots.txt — 전 봇 허용 + 사이트맵·RSS 안내
     with open(os.path.join(PUBLIC_DIR, "robots.txt"), "w", encoding="utf-8") as f:
         f.write(
-            "User-agent: *\nAllow: /\n\n"
-            f"Sitemap: {BASE_URL.rstrip('/')}/sitemap.xml\n"
+            "User-agent: *\n"
+            "Allow: /\n\n"
+            "# 주요 검색엔진 봇 (구글/네이버/빙/다음)\n"
+            "User-agent: Googlebot\nAllow: /\n"
+            "User-agent: Yeti\nAllow: /\n"          # 네이버
+            "User-agent: bingbot\nAllow: /\n"
+            "User-agent: Daum\nAllow: /\n\n"
+            f"Sitemap: {base}/sitemap.xml\n"
+            f"Sitemap: {base}/rss.xml\n"
         )
 
     open(os.path.join(PUBLIC_DIR, ".nojekyll"), "w").close()

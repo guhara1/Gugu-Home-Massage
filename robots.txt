@@ -1,4 +1,15 @@
 User-agent: *
 Allow: /
 
+# 주요 검색엔진 봇 (구글/네이버/빙/다음)
+User-agent: Googlebot
+Allow: /
+User-agent: Yeti
+Allow: /
+User-agent: bingbot
+Allow: /
+User-agent: Daum
+Allow: /
+
 Sitemap: https://gugu-home-massage.pages.dev/sitemap.xml
+Sitemap: https://gugu-home-massage.pages.dev/rss.xml
