@@ -399,9 +399,12 @@ def _reviews():
         "<section><p>구구 마사지 서울 출장마사지·홈타이를 이용하신 고객의 후기를 "
         "모았습니다. 후기는 실제 이용 고객이 남긴 내용을 바탕으로 하며, 방문 지역·코스·"
         "응대에 대한 솔직한 의견을 담고 있습니다. 예약 전 참고하시면 도움이 됩니다.</p>"
+        '<div class="reviews-summary reviews-summary-lg">'
         f'<div class="reviews-score reviews-score-lg"><span class="reviews-avg">{agg["value"]}</span>'
         f'<span class="reviews-stars">{_stars(agg["value"])}</span>'
-        f'<span class="reviews-count">5점 만점 · 누적 후기 {agg["count"]}개</span></div></section>'
+        f'<span class="reviews-count">5점 만점 · 누적 후기 {agg["count"]}개</span></div>'
+        f'{RV.dist_html()}'
+        '</div></section>'
         f'<section><h2>고객 후기 전체</h2><div class="reviews-grid reviews-grid-full">{cards}</div></section>'
         "<section><h2>후기는 어떻게 반영되나요</h2>"
         "<p>구구 마사지는 건전한 방문 관리 서비스만 운영하며, 후기는 위생·안전 기준과 "

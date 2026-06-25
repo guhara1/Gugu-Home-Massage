@@ -43,6 +43,29 @@ def aggregate():
             "best": 5, "worst": min((r["rating"] for r in REVIEWS), default=1)}
 
 
+def distribution():
+    """별점 분포 [(별점, 개수, 백분율), ...] 5★→1★ 순."""
+    counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+    for r in REVIEWS:
+        counts[r["rating"]] = counts.get(r["rating"], 0) + 1
+    n = len(REVIEWS) or 1
+    return [(star, counts[star], round(counts[star] / n * 100)) for star in (5, 4, 3, 2, 1)]
+
+
+def dist_html(compact=False):
+    """별점 분포 막대 UI."""
+    rows = ""
+    for star, cnt, pct in distribution():
+        rows += (
+            f'<div class="dist-row">'
+            f'<span class="dist-star">{star}<span class="dist-s">★</span></span>'
+            f'<span class="dist-bar"><span class="dist-fill" style="width:{pct}%"></span></span>'
+            f'<span class="dist-pct">{cnt}</span></div>'
+        )
+    cls = "rating-dist compact" if compact else "rating-dist"
+    return f'<div class="{cls}" aria-label="별점 분포">{rows}</div>'
+
+
 def shown_for(key, k=3):
     """페이지별로 고르게 분산된 후기 부분집합(결정적). 방문 페이지마다 다른
     후기를 노출하되, 같은 페이지는 항상 같은 후기를 보여 스키마와 일치시킨다."""

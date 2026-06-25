@@ -239,9 +239,12 @@ def render_reviews(shown, agg) -> str:
     return (
         '<section class="reviews-band" aria-label="이용 후기"><div class="container">'
         '<div class="reviews-head"><h2>이용 후기</h2>'
+        '<div class="reviews-summary">'
         f'<div class="reviews-score"><span class="reviews-avg">{agg["value"]}</span>'
         f'<span class="reviews-stars" aria-hidden="true">{_stars(agg["value"])}</span>'
-        f'<span class="reviews-count">5점 만점 · 누적 후기 {agg["count"]}개</span></div></div>'
+        f'<span class="reviews-count">5점 만점 · 누적 후기 {agg["count"]}개</span></div>'
+        f'{RV.dist_html(compact=True)}'
+        '</div></div>'
         f'<div class="reviews-grid">{cards}</div>'
         '<p class="reviews-note">실제 이용 고객이 남긴 후기를 바탕으로 합니다. '
         '<a href="/reviews/">전체 후기 보기 →</a></p>'

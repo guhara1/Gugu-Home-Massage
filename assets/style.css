@@ -1433,3 +1433,30 @@ h1 { border-bottom: 2px solid transparent; border-image: var(--grad-amber) 1; le
 @media (max-width: 640px) {
   .hub-cols, .reviews-grid { grid-template-columns: 1fr; }
 }
+
+/* 별점 분포 막대 */
+.reviews-summary { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+.reviews-summary-lg { gap: 36px; margin-top: 14px; }
+.rating-dist { display: flex; flex-direction: column; gap: 6px; min-width: 220px; }
+.rating-dist.compact { gap: 4px; min-width: 190px; }
+.dist-row { display: flex; align-items: center; gap: 10px; }
+.dist-star {
+  font-size: 0.82rem; font-weight: 700; color: var(--text-dim);
+  width: 26px; text-align: right; white-space: nowrap;
+}
+.dist-s { color: #FFC15A; font-size: 0.72rem; }
+.dist-bar {
+  flex: 1; height: 8px; border-radius: 999px;
+  background: var(--glass-strong); overflow: hidden; min-width: 90px;
+}
+.dist-fill {
+  display: block; height: 100%; border-radius: 999px;
+  background: var(--grad-amber);
+}
+.dist-pct { font-size: 0.8rem; color: var(--text-mute); width: 22px; text-align: right; }
+.rating-dist.compact .dist-bar { height: 6px; }
+
+@media (max-width: 640px) {
+  .reviews-summary { gap: 18px; }
+  .rating-dist, .rating-dist.compact { min-width: 100%; }
+}
