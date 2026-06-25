@@ -1,0 +1,83 @@
+# 구구 마사지 — 서울 전문 출장마사지·홈타이 안내 사이트
+
+서울특별시 전지역 방문 관리 서비스(출장마사지·홈타이) 안내 정적 사이트입니다.
+
+**상호**: 구구 마사지
+**예약전화**: 0508-202-4719
+**서비스 지역**: 서울특별시 25개 자치구 전역
+
+## 구조
+
+- **정적 HTML 사이트** — 어느 호스팅(Cloudflare Pages, GitHub Pages, Netlify)에서든 그대로 서빙
+- **build.py** + **content/** — 페이지를 Python으로 정의하고 정적 HTML 생성
+- **데이터 기반 생성** — 지역명만 바꾼 복제 본문이 아니라, 각 지역의 고유 데이터(인접 역·동·생활권·랜드마크)를 엮어 페이지마다 다른 본문 생성
+
+```
+build.py                     # 빌드 스크립트(스키마·noindex·디스크립션 트림 자동 처리)
+content/
+  site.py                    # 상호·전화·도메인·텔레그램·메뉴
+  seoul_data.py              # 구/역/생활권 데이터 취합 + 22개 생활권
+  _data_gangnam.py           # 강남구 데이터(스키마 예시)
+  _data_c~g.py               # 나머지 24개 구 데이터(권역별 분할)
+  _data_stations.py          # 46개 핵심 역세권 데이터
+  generate.py                # 데이터 → 본문 생성기(구/동/역/생활권)
+  main.py                    # 서울 메인 페이지(히어로 + 스키마)
+  info.py                    # 예약·확인사항·가이드·고객센터·개인정보
+  __init__.py                # 페이지 조립(PAGES)
+assets/
+  style.css                  # 프리미엄 다크 + 앰버/골드 + Pretendard + 글래스 오버레이
+  og-image.svg               # 선호 썸네일(1200×630)
+  favicon.svg / *.png        # 파비콘
+```
+
+## 빌드
+
+```bash
+python3 build.py
+```
+
+빌드 시 페이지별 본문 글자수와 색인(index/noindex) 리포트가 출력됩니다.
+
+## SEO 운영 원칙(구글 정책 반영)
+
+- **단계적 색인**: `priority == 1`만 색인, `priority >= 2`는 빌드하되 `noindex`(DB 보관/2·3차 확장 대기)
+- **본문 1,500자 미만 자동 noindex** — 얇은 페이지 색인 방지
+- **메뉴명·URL에 키워드 미반복** — `/seoul/gangnam-gu/`, `/seoul/station/gangnam-station/` 등 지역·역명 기준
+- **환승역 단일 URL** — 노선·출구별로 페이지를 쪼개지 않음
+- **번호 동 → 대표 동 병합** — `역삼1·2동` → `역삼동`
+- **생활권 허브** — 행정구·행정동·역세권을 잇는 22개 생활권 페이지
+- **고유 본문** — 지역별 데이터 + 회전 서술 골격으로 중복 문장 최소화
+- **E-E-A-T / 건전성 안내** — 모든 페이지에 이용 전 확인사항·개인정보·불법/선정 불가 안내
+
+### 스키마(JSON-LD) — 전 페이지 자동 주입
+
+- `Organization`(전역) · `WebPage`(`primaryImageOfPage` 포함) · `BreadcrumbList`
+- `FAQPage`(FAQ 보유 페이지) · 메인은 `ItemList`(25개 구) 추가
+- 선호 썸네일: `og:image` + `ImageObject`로 `assets/og-image.svg` 지정
+
+## 현재 페이지 구성
+
+- 서울 메인 1
+- 행정구 안내 + 25개 구
+- 행정동 163개(1차 색인 67개 / 2·3차 대기 noindex)
+- 지하철역 안내 + 46개 핵심 역
+- 생활권 안내 + 22개 생활권
+- 예약·확인사항·홈타이 가이드·고객센터·개인정보처리방침
+- **총 265 페이지 / 1차 색인 168 / 단계 대기 noindex 97**
+
+## 푸터
+
+- **웹사이트 제작문의 · 제휴문의** 오렌지(앰버/골드) 프리미엄 버튼 → 텔레그램 연결
+- 텔레그램: `content/site.py`의 `TELEGRAM_URL`에서 변경
+
+## 배포 전 할 일
+
+1. `content/site.py`의 `BASE_URL`을 실제 도메인으로 변경 후 `python3 build.py` 재실행
+2. `assets/favicon-32.png` · `apple-touch-icon.png` · `favicon.ico`는 이전 자산이 남아 있으므로 새 로고(구)로 재생성 권장(현재 SVG 파비콘·OG 이미지는 구구 마사지 브랜딩 적용 완료)
+3. Google Search Console에 `sitemap.xml` 제출
+4. GSC 유입·노출 데이터를 보고 `priority` 값을 조정해 2·3차 색인 단계적 확장
+
+## 디자인
+
+- **프리미엄 옵시디언 팔레트**: `#08090d` 베이스 + 앰버 오렌지 `#FF7A2F` + 골드 `#C9A35C`
+- **Pretendard / Noto Serif KR** · **글래스모피즘 오버레이** · 골드 헤어라인 · 반응형 · 접근성(WAI-ARIA)
